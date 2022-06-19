@@ -12,18 +12,20 @@ fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u3
         None => (80, 60),
     };
 
+    let ratio = (img.width() as f32) / (img.height() as f32);
+
     if spec_w.is_some() && spec_h.is_some() {
         return (spec_w.unwrap(), spec_h.unwrap() / 2);
     }
     else if spec_w.is_some() {
-        return (spec_w.unwrap(), (((img.height() as f32) / (img.width() as f32) * (spec_w.unwrap() as f32)) as u32) / 2);
+        return (spec_w.unwrap(), (((spec_w.unwrap() as f32) / ratio) as u32) / 2);
     }
     else if spec_h.is_some() {
-        return ((((img.width() as f32) / (img.height() as f32) * (spec_h.unwrap() * 2) as f32) as u32) / 2, spec_h.unwrap() / 2);
+        return (((ratio * (spec_h.unwrap() * 2) as f32) as u32) / 2, spec_h.unwrap() / 2);
     }
 
-    let width_based_height = ((img.height() as f32) / (img.width() as f32) * (term_w as f32)).floor() as u32;
-    let height_based_width = ((img.width() as f32) / (img.height() as f32) * (term_h as f32)).floor() as u32;
+    let width_based_height = ((term_w as f32) / ratio).floor() as u32;
+    let height_based_width = (ratio * (term_h as f32)).floor() as u32;
 
     if width_based_height > term_h {
         return (height_based_width, term_h / 2);
