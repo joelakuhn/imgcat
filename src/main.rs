@@ -47,7 +47,7 @@ fn parse_optional_int(opt : Option<String>) -> Option<u32> {
         Some(w_arg) => match u32::from_str_radix(w_arg.as_str(), 10) {
             Ok(w) => Some(w),
             Err(_e) => {
-                eprintln!("Malformed width: {}", w_arg);
+                eprintln!("Malformed size: {}", w_arg);
                 exit(1);
             }
         },
