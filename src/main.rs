@@ -117,6 +117,12 @@ fn main() {
 
                 print_img(img, algo, target_w, target_h);
             }
+            else {
+                eprintln!("Could not decode {}", path);
+            }
+        }
+        else {
+            eprintln!("Could not open {}", path);
         }
     }
 }
