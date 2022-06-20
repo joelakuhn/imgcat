@@ -92,10 +92,10 @@ fn main() {
             "Use triangle algorithm (default)");
         ap.refer(&mut nearest)
             .add_option(&["-n", "--nearest"], StoreTrue,
-            "Use nearest neighbor algorithm");
+            "Use nearest neighbor algorithm (faster, low quality)");
         ap.refer(&mut lanczos)
             .add_option(&["-l", "--lanczos"], StoreTrue,
-            "Use lanczos3 algorithm");
+            "Use lanczos3 algorithm (slower, high quality)");
         ap.refer(&mut positional_args)
             .add_argument("files", Collect,
             "Image files to process");
@@ -111,7 +111,7 @@ fn main() {
         if print_paths {
             println!("{}", path);
         }
-        if let Ok(reader) = ImageReader::open(path) {
+        if let Ok(reader) = ImageReader::open(path.as_str()) {
             if let Ok(img) = reader.decode() {
                 let (target_w, target_h) = get_output_size(&img, spec_w, spec_h);
 

@@ -6,7 +6,7 @@
 
 ```
 Usage:
-  target/release/imgcat [OPTIONS] [FILES ...]
+  imgcat [OPTIONS] [FILES ...]
 
 Positional arguments:
   files                 Image files to process
@@ -16,6 +16,6 @@ Optional arguments:
   -w,--width WIDTH      Specify width
   -h,--height HEIGHT    Specify height
   -t,--triangle         Use triangle algorithm (default)
-  -n,--nearest          Use nearest neighbor algorithm
-  -l,--lanczos          Use lanczos3 algorithm
+  -n,--nearest          Use nearest neighbor algorithm (faster, low quality)
+  -l,--lanczos          Use lanczos3 algorithm (slower, high quality)
 ```
