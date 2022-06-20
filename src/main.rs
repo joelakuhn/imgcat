@@ -53,8 +53,17 @@ fn parse_optional_int(opt : Option<String>) -> Option<u32> {
     return parsed_opt;
 }
 
+fn maybe_resize(img : DynamicImage, algo : image::imageops::FilterType, target_w : u32, target_h : u32) -> DynamicImage {
+    return if target_w == img.width() && target_h * 2 == img.height() {
+        img
+    }
+    else {
+        img.resize_exact(target_w, target_h * 2, algo)
+    }
+}
+
 fn print_img(img : DynamicImage, algo : image::imageops::FilterType, target_w : u32, target_h : u32) {
-    let resized = img.resize_exact(target_w, target_h * 2, algo);
+    let resized = maybe_resize(img, algo, target_w, target_h);
 
     let mut output = String::from("");
     for row in 0..target_h {
