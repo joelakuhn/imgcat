@@ -5,6 +5,7 @@ use terminal_size::{Width, Height, terminal_size};
 use image::DynamicImage;
 use argparse::{ArgumentParser, Collect, StoreOption, StoreTrue};
 use std::process::exit;
+use std::cmp::min;
 
 fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u32>) -> (u32, u32) {
     let (term_w, term_h) = match terminal_size() {
@@ -24,14 +25,17 @@ fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u3
         return (((ratio * (spec_h.unwrap() * 2) as f32) as u32) / 2, spec_h.unwrap() / 2);
     }
 
-    let width_based_height = ((term_w as f32) / ratio).floor() as u32;
-    let height_based_width = (ratio * (term_h as f32)).floor() as u32;
+    let bounds_w = min(term_w, img.width());
+    let bounds_h = min(term_h, img.height());
 
-    if width_based_height > term_h {
-        return (height_based_width, term_h / 2);
+    let width_based_height = ((bounds_w as f32) / ratio).floor() as u32;
+    let height_based_width = (ratio * (bounds_h as f32)).floor() as u32;
+
+    if width_based_height > bounds_h {
+        return (height_based_width, bounds_h / 2);
     }
     else {
-        return (term_w, width_based_height / 2);
+        return (bounds_w, width_based_height / 2);
     }
 }
 
