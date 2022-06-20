@@ -1,11 +1,14 @@
+use std::process::exit;
+use std::cmp::min;
+
+use argparse::{ArgumentParser, Collect, StoreOption, StoreTrue};
+
+use terminal_size::{Width, Height, terminal_size};
+
 use image::io::Reader as ImageReader;
 use image::GenericImageView;
 use image::imageops::FilterType::{Lanczos3, Nearest, Triangle};
-use terminal_size::{Width, Height, terminal_size};
 use image::DynamicImage;
-use argparse::{ArgumentParser, Collect, StoreOption, StoreTrue};
-use std::process::exit;
-use std::cmp::min;
 
 fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u32>) -> (u32, u32) {
     let (term_w, term_h) = match terminal_size() {
