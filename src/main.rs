@@ -6,11 +6,15 @@ use argparse::{ArgumentParser, Collect, StoreOption, StoreTrue};
 use terminal_size::{Width, Height, terminal_size};
 
 use image::io::Reader as ImageReader;
-use image::GenericImageView;
+use image::{GenericImageView};
 use image::imageops::FilterType::{Lanczos3, Nearest, Triangle};
 use image::DynamicImage;
 
-fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u32>) -> (u32, u32) {
+fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u32>, real_size : bool) -> (u32, u32) {
+    if real_size {
+        return (img.width(), img.height() / 2 + img.height() % 2);
+    }
+
     let (term_w, term_h) = match terminal_size() {
         Some((Width(w), Height(h))) => (w as u32, (h * 2) as u32),
         None => (80, 60),
@@ -56,8 +60,11 @@ fn parse_optional_int(opt : Option<String>) -> Option<u32> {
     return parsed_opt;
 }
 
-fn maybe_resize(img : DynamicImage, algo : image::imageops::FilterType, target_w : u32, target_h : u32) -> DynamicImage {
-    return if target_w == img.width() && target_h * 2 == img.height() {
+fn maybe_resize(img : DynamicImage, algo : image::imageops::FilterType, target_w : u32, target_h : u32, real_size : bool) -> DynamicImage {
+    return if real_size {
+        img
+    }
+    else if target_w == img.width() && target_h * 2 == img.height() {
         img
     }
     else {
@@ -65,10 +72,12 @@ fn maybe_resize(img : DynamicImage, algo : image::imageops::FilterType, target_w
     }
 }
 
-fn print_img(img : DynamicImage, algo : image::imageops::FilterType, target_w : u32, target_h : u32) {
-    let resized = maybe_resize(img, algo, target_w, target_h);
+fn print_img(img : DynamicImage, algo : image::imageops::FilterType, target_w : u32, target_h : u32, real_size : bool) {
+    let resized = maybe_resize(img, algo, target_w, target_h, real_size);
 
     let mut output = String::from("");
+    let max_y = resized.height() - 1;
+
     for row in 0..target_h {
         for col in 0..target_w {
             let x = col;
@@ -76,7 +85,12 @@ fn print_img(img : DynamicImage, algo : image::imageops::FilterType, target_w : 
             let lower_y = row * 2 + 1;
 
             let upper_px = resized.get_pixel(x, upper_y);
-            let lower_px = resized.get_pixel(x, lower_y);
+            let lower_px = if lower_y < max_y {
+                resized.get_pixel(x, lower_y)
+            }
+            else {
+                image::Rgba([0, 0, 0, 0])
+            };
 
             let image::Rgba([ur, ug, ub, _ua]) = upper_px;
             let image::Rgba([lr, lg, lb, _la]) = lower_px;
@@ -91,6 +105,7 @@ fn main() {
     let mut positional_args : Vec<String> = vec![];
     let mut specified_width_arg : Option<String> = None;
     let mut specified_height_arg : Option<String> = None;
+    let mut real_size = false;
     let mut triangle = true;
     let mut lanczos = false;
     let mut nearest = false;
@@ -103,6 +118,9 @@ fn main() {
         ap.refer(&mut specified_height_arg)
             .add_option(&["-h", "--height"], StoreOption,
             "Specify height");
+        ap.refer(&mut real_size)
+            .add_option(&["-S", "--real-size"], StoreTrue,
+            "Print image at real size");
         ap.refer(&mut triangle)
             .add_option(&["-t", "--triangle"], StoreTrue,
             "Use triangle algorithm (default)");
@@ -129,9 +147,9 @@ fn main() {
         }
         if let Ok(reader) = ImageReader::open(path.as_str()) {
             if let Ok(img) = reader.decode() {
-                let (target_w, target_h) = get_output_size(&img, spec_w, spec_h);
+                let (target_w, target_h) = get_output_size(&img, spec_w, spec_h, real_size);
 
-                print_img(img, algo, target_w, target_h);
+                print_img(img, algo, target_w, target_h, real_size);
             }
             else {
                 eprintln!("Could not decode {}", path);
