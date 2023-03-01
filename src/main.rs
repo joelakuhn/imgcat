@@ -10,9 +10,13 @@ use image::{GenericImageView};
 use image::imageops::FilterType::{Lanczos3, Nearest, Triangle};
 use image::DynamicImage;
 
+fn ceil_half(n : u32) -> u32 {
+    return n / 2 + n % 2
+}
+
 fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u32>, real_size : bool) -> (u32, u32) {
     if real_size {
-        return (img.width(), img.height() / 2 + img.height() % 2);
+        return (img.width(), ceil_half(img.height()));
     }
 
     let (term_w, term_h) = match terminal_size() {
@@ -23,13 +27,13 @@ fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u3
     let ratio = (img.width() as f32) / (img.height() as f32);
 
     if spec_w.is_some() && spec_h.is_some() {
-        return (spec_w.unwrap(), spec_h.unwrap() / 2);
+        return (spec_w.unwrap(), ceil_half(spec_h.unwrap()));
     }
     else if spec_w.is_some() {
-        return (spec_w.unwrap(), (((spec_w.unwrap() as f32) / ratio) as u32) / 2);
+        return (spec_w.unwrap(), ceil_half(((spec_w.unwrap() as f32) / ratio) as u32));
     }
     else if spec_h.is_some() {
-        return (((ratio * (spec_h.unwrap() * 2) as f32) as u32) / 2, spec_h.unwrap() / 2);
+        return (((ratio * (spec_h.unwrap() * 2) as f32) as u32) / 2, ceil_half(spec_h.unwrap()));
     }
 
     let bounds_w = min(term_w, img.width());
@@ -39,10 +43,10 @@ fn get_output_size(img : &DynamicImage, spec_w : Option<u32>, spec_h : Option<u3
     let height_based_width = (ratio * (bounds_h as f32)).floor() as u32;
 
     if width_based_height > bounds_h {
-        return (height_based_width, bounds_h / 2);
+        return (height_based_width, ceil_half(bounds_h));
     }
     else {
-        return (bounds_w, width_based_height / 2);
+        return (bounds_w, ceil_half(width_based_height));
     }
 }
 
